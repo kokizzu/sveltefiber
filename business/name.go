@@ -1,44 +1,21 @@
 package business
 
 import (
-	"sync/atomic"
+	"sveltefiber/model"
 )
 
 type CreateNameIn struct {
 	Name string `json:"name"`
 }
 
-type Record struct {
-	Id   uint32 `json:"id"`
-	Name string `json:"name"'`
-}
-
 type CreateNameOut struct {
-	Success bool     `json:"success"`
-	Records []Record `json:"records"`
-}
-
-var m = map[uint32]string{}
-var autoInc = uint32(1)
-
-func ListNames() []Record {
-	var records []Record
-	for k, v := range m {
-		records = append(records, Record{
-			Id:   k,
-			Name: v,
-		})
-	}
-	return records
+	Success bool           `json:"success"`
+	Records []model.Record `json:"records"`
 }
 
 func CreateName(in *CreateNameIn) (out CreateNameOut) {
-	atomic.AddUint32(&autoInc, 1)
-	m[autoInc] = in.Name
-
-	out.Success = true
-	out.Records = ListNames()
-
+	out.Success = model.AddName(in.Name)
+	out.Records = model.ListNames()
 	return
 }
 
@@ -47,16 +24,12 @@ type DeleteNameIn struct {
 }
 
 type DeleteNameOut struct {
-	Success bool     `json:"success"`
-	Records []Record `json:"records"`
+	Success bool           `json:"success"`
+	Records []model.Record `json:"records"`
 }
 
 func DeleteName(in *DeleteNameIn) (out DeleteNameOut) {
-	_, ok := m[in.Id]
-	delete(m, in.Id)
-
-	out.Success = ok
-	out.Records = ListNames()
-
+	out.Success = model.DeleteName(in.Id)
+	out.Records = model.ListNames()
 	return
 }
