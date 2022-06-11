@@ -1,5 +1,7 @@
-rsync -Rv svelte/dist /var/www/html
+Just need to do `rsync -Rv svelte /var/www/html` and create a service (eg. with systemd or docker-compose for the golang service)
 
+if the server used as shared host, just add a reverse proxy, so each backend can handle specific domain
+```
 /etc/nginx/
   nginx.conf
   sites-available
@@ -18,3 +20,4 @@ rsync -Rv svelte/dist /var/www/html
       server_name whatever.com
   sites-enabled
     symlink ../whatever.com
+```
