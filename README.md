@@ -1,5 +1,6 @@
-# sveltefiber
+# SvelteFiber example
 
+minimal example how to integrate svelte-mpa with [Golang](//go.dev) (in this case Fiber framework)
 
 ## Dependencies
 
@@ -20,6 +21,7 @@ cd svelte && npm i && npm start # localhost:5500 for client side dev mode
 
 ## How it works
 
-svelte-mpa will generate `index.html` that loadded by fiber app, 
-fiber app renders whatever variable in the index.html, all other API handled by normal gofiber handler.
+- svelte-mpa will generate `index.html` that loaded by fiber app
+- fiber app renders/replace any special [template](//github.com/kokizzu/gotro/tree/master/Z) keywords in the `index.html`
+- all other API handled by normal gofiber handler
 
