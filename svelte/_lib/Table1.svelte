@@ -1,9 +1,11 @@
 <script>
 	import { listNames } from './store.js';
-	let list = $listNames || [];
+
+	export let list;
 	$: list = $listNames
 	$: console.log($listNames)
 	let lastResponse = '';
+
 	function doDelete(e, id) {
 		fetch("/api/deleteName", {
 			method: "POST",
@@ -36,7 +38,7 @@
 			<td>{row.id}</td>
 			<td>{row.name}</td>
 			<td>
-				<button on:click={(e) => doDelete(e,row.id)}> Delete </button>
+				<button on:click={(e) => doDelete(e,row.id)}> Delete</button>
 			</td>
 		</tr>
 	{/each}

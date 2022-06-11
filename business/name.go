@@ -21,7 +21,7 @@ type CreateNameOut struct {
 var m = map[uint32]string{}
 var autoInc = uint32(1)
 
-func toRecords(m map[uint32]string) []Record {
+func ListNames() []Record {
 	var records []Record
 	for k, v := range m {
 		records = append(records, Record{
@@ -37,7 +37,7 @@ func CreateName(in *CreateNameIn) (out CreateNameOut) {
 	m[autoInc] = in.Name
 
 	out.Success = true
-	out.Records = toRecords(m)
+	out.Records = ListNames()
 
 	return
 }
@@ -56,7 +56,7 @@ func DeleteName(in *DeleteNameIn) (out DeleteNameOut) {
 	delete(m, in.Id)
 
 	out.Success = ok
-	out.Records = toRecords(m)
+	out.Records = ListNames()
 
 	return
 }
