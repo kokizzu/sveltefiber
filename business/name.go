@@ -4,6 +4,8 @@ import (
 	"sveltefiber/model"
 )
 
+// TODO: refactor to struct with model dependency
+
 type CreateNameIn struct {
 	Name string `json:"name"`
 }

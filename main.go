@@ -9,6 +9,7 @@ import (
 	"github.com/kokizzu/gotro/L"
 	"github.com/kokizzu/gotro/X"
 	"sveltefiber/business"
+	"sveltefiber/model"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		tpl := strings.ReplaceAll(string(template), `/*! title */`, `Hewlloo World`)
-		tpl = strings.ReplaceAll(tpl, `[/* raw_data */]`, X.ToJson(business.ListNames()))
+		tpl = strings.ReplaceAll(tpl, `[/* raw_data */]`, X.ToJson(model.ListNames()))
 		c.Set("Content-type", "text/html")
 		return c.SendString(tpl)
 	})

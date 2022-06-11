@@ -2,6 +2,8 @@ package model
 
 import "sync/atomic"
 
+// TODO: refactor to struct with mysql dependency
+
 var m = map[uint32]string{}
 var autoInc = uint32(0)
 
