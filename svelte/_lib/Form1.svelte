@@ -1,12 +1,12 @@
 <script>
 
-	import { listNames } from './store.js';
+	import { listNames, endpointUrl } from './store.js';
 	let name = '';
 	let lastResponse = '';
 
 	function doSubmit(e) {
 		e.preventDefault()
-		fetch("/api/createName", {
+		fetch(endpointUrl+"/api/createName", {
 			method: "POST",
 			body: JSON.stringify({
 				name: name,

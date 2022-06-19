@@ -1,5 +1,5 @@
 <script>
-	import { listNames } from './store.js';
+	import { listNames, endpointUrl } from './store.js';
 
 	export let list;
 	$: list = $listNames
@@ -7,7 +7,7 @@
 	let lastResponse = '';
 
 	function doDelete(e, id) {
-		fetch("/api/deleteName", {
+		fetch(endpointUrl+"/api/deleteName", {
 			method: "POST",
 			body: JSON.stringify({
 				id: id,

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/kokizzu/gotro/L"
 	"github.com/kokizzu/gotro/X"
 	"sveltefiber/business"
@@ -14,6 +15,7 @@ import (
 
 func main() {
 	app := fiber.New()
+	app.Use(cors.New())
 	const indexFile = "svelte/index.html"
 	template, err := os.ReadFile(indexFile)
 	L.PanicIf(err, `os.ReadFile: `+indexFile)
