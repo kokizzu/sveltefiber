@@ -15,7 +15,9 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		Immutable: true,
+	})
 	app.Use(cors.New())
 	const indexFile = "svelte/index.html"
 	template, err := os.ReadFile(indexFile)

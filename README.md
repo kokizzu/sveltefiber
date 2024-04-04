@@ -16,7 +16,10 @@ go mod tidy
 air # localhost:3001 for backend and SSR
 
 # start auto recompile
-cd svelte && npm i && npm start # localhost:5500 for client side dev mode
+cd svelte 
+npm i && npm start # localhost:5500 for client side dev mode
+# or using bun
+bun install && bun start 
 ```
 
 ## How it works
