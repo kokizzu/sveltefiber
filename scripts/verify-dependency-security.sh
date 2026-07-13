@@ -37,7 +37,7 @@ check_min_version() {
 
 go_modules="$(mktemp)"
 trap 'rm -f "$go_modules"' EXIT
-go list -m all > "$go_modules"
+go list -m -f '{{.Path}} {{if .Replace}}{{.Replace.Version}}{{else}}{{.Version}}{{end}}' all > "$go_modules"
 
 go_version() {
   local module="$1"

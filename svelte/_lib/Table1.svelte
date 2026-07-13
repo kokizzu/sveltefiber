@@ -28,20 +28,24 @@
 </script>
 
 <table border="1">
-	<tr>
-		<th>id</th>
-		<th>name</th>
-		<th>action</th>
-	</tr>
-	{#each list as row}
+	<thead>
 		<tr>
-			<td>{row.id}</td>
-			<td>{row.name}</td>
-			<td>
-				<button on:click={(e) => doDelete(e,row.id)}> Delete</button>
-			</td>
+			<th>id</th>
+			<th>name</th>
+			<th>action</th>
 		</tr>
-	{/each}
+	</thead>
+	<tbody>
+		{#each list as row}
+			<tr>
+				<td>{row.id}</td>
+				<td>{row.name}</td>
+				<td>
+					<button on:click={(e) => doDelete(e,row.id)}> Delete</button>
+				</td>
+			</tr>
+		{/each}
+	</tbody>
 </table>
 <div>{lastResponse ? JSON.stringify(lastResponse) : ''}</div>
 <style>

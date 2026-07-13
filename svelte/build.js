@@ -3,17 +3,14 @@ const compile = require( 'svelte/compiler' ).compile
 const chokidar = require( 'chokidar' );
 const esbuild = require( 'esbuild' );
 const {readdirSync, statSync, existsSync, writeFileSync, readFileSync} = require( 'fs' );
-const {join, basename, resolve, dirname, relative} = require( 'path' );
+const {join, basename, resolve, dirname, relative, extname} = require( 'path' );
+const {createServer} = require( 'http' );
 const sveltePlugin = require( 'esbuild-svelte' );
-const {sum} = require( 'lodash' );
 const parse5 = require( 'parse5' );
-const notifier = require('node-notifier');
 
 process.on('uncaughtException', error => {
-  notifier.notify({
-    title: 'Error occurs',
-    message: `${error}`
-  });
+  console.error( error );
+  process.exit( 1 );
 });
 
 const [watch, serve, minify, debug, logVars] = ['--watch', '--serve', '--minify', '--debug', '--log-vars'].map( s =>
@@ -95,17 +92,25 @@ const svelteJsPathResolver = {
 
 function createBuilder( entryPoints ) {
   console.log( 'pages:', entryPoints );
-  
-  return esbuild.build( {
+
+  const options = {
     entryPoints: entryPoints.map( s => s + '.ts' ),
     bundle: true,
     outdir: '.',
     write: false,
     plugins: [svelteJsPathResolver, sveltePlugin( require( './svelte.config' ) )],
-    incremental: !!watch,
     sourcemap: false,
     minify,
-    } )
+  };
+
+  if( !watch ) return esbuild.build( options );
+
+  return esbuild.context( options ).then( async ctx => {
+    const result = await ctx.rebuild();
+    result.rebuild = () => ctx.rebuild();
+    result.dispose = () => ctx.dispose();
+    return result;
+  } );
 }
 
 function layoutFor( path, content = {} ) {
@@ -268,6 +273,39 @@ function layoutFor( path, content = {} ) {
   });
 }
 
+function startServer( port = 5500 ) {
+  const root = resolve( __dirname );
+  const mime = new Map( [
+    ['.css', 'text/css; charset=utf-8'],
+    ['.html', 'text/html; charset=utf-8'],
+    ['.js', 'text/javascript; charset=utf-8'],
+    ['.json', 'application/json; charset=utf-8'],
+    ['.svg', 'image/svg+xml'],
+    ['.txt', 'text/plain; charset=utf-8'],
+  ] );
+
+  createServer( ( req, res ) => {
+    try {
+      const url = new URL( req.url || '/', 'http://localhost' );
+      let requested = decodeURIComponent( url.pathname );
+      if( requested.endsWith( '/' ) ) requested += 'index.html';
+
+      const file = resolve( root, `.${requested}` );
+      if( !file.startsWith( root ) || !existsSync( file ) || !statSync( file ).isFile() ) {
+        res.writeHead( 404, {'content-type': 'text/plain; charset=utf-8'} );
+        res.end( 'not found' );
+        return;
+      }
+
+      res.writeHead( 200, {'content-type': mime.get( extname( file ) ) || 'application/octet-stream'} );
+      res.end( readFileSync( file ) );
+    } catch( err ) {
+      res.writeHead( 500, {'content-type': 'text/plain; charset=utf-8'} );
+      res.end( String( err ) );
+    }
+  } ).listen( port, () => console.log( `serving http://localhost:${port}` ) );
+}
+
 (async () => {
   let watcherReady = false;
   
@@ -306,7 +344,8 @@ function layoutFor( path, content = {} ) {
     
     // for each .html files need to be generated
     Object.entries( output ).forEach( ( [path, data] ) => {
-      const renderedSvelte = compile( path + '.svelte' );
+      const filename = path + '.svelte';
+      const renderedSvelte = compile( readFileSync( filename, 'utf-8' ), {filename} );
       
       const content = layoutFor( path, renderedSvelte )( data );
       
@@ -326,27 +365,6 @@ function layoutFor( path, content = {} ) {
     let timeRef = null;
     
     function changeListener( path, stats, type, watcher ) {
-      switch (type) {
-      case 'change':
-        notifier.notify({
-          title: 'Change occurs',
-          message: `Change occurs in "${path}"`
-        });
-        break;
-      case 'add':
-        notifier.notify({
-          title: 'File added',
-          message: `Added file "${path}"`
-        });
-        break;
-      case 'unlink':
-        notifier.notify({
-          title: 'File remove',
-          message: `Removed file "${path}"`
-        });
-        break;
-      }
-
       if( compiledFiles.has( resolve( path ) ) ) return;
       console.log( type + ':', path.replace( __dirname, '' ) );
       
@@ -373,18 +391,12 @@ function layoutFor( path, content = {} ) {
       .on( 'add', ( path, stats ) => changeListener( path, stats, 'add', watcher ) )
       .on( 'unlink', ( path, stats ) => changeListener( path, stats, 'unlink', watcher ) )
       .on( 'ready', () => {
-        console.log( `watching ${sum( Object.values( watcher.getWatched() ).map( t => t.length ) )} files/dirs for changes` );
+        const watched = Object.values( watcher.getWatched() ).reduce( ( total, t ) => total + t.length, 0 );
+        console.log( `watching ${watched} files/dirs for changes` );
         watcherReady = true;
       } )
       .on( 'error', err => console.log( 'ERROR:', err ) );
   }
   
-  const FiveServer = require( 'five-server' ).default;
-  serve &&
-  (await new FiveServer().start( {
-    open: true,
-    workspace: __dirname,
-    ignore: [...ignorePath, /\.(js|ts|svelte)$/, /\_layout\.html$/],
-    wait: 500,
-  } ));
+  serve && startServer();
 })();
