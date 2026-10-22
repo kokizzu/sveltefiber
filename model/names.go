@@ -9,7 +9,7 @@ var autoInc = uint32(0)
 
 type Record struct {
 	Id   uint32 `json:"id"`
-	Name string `json:"name"'`
+	Name string `json:"name"`
 }
 
 func ListNames() []Record {
